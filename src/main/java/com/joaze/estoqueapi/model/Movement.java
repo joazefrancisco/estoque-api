@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,6 +25,12 @@ public class Movement {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(nullable = false)
+    private BigDecimal unitCost;
+
+    @Column(nullable = false)
+    private BigDecimal valueTotal;
 
     @Column(nullable = false)
     private LocalDateTime date;

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping(name = "/movements")
+@RequestMapping("/movements")
 public class MovementController {
 
     private ProductStockService productStockService;

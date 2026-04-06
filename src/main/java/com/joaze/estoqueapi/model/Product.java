@@ -26,10 +26,13 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Integer quantity;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private BigDecimal averageCost;
+
+    @Column(nullable = false)
+    private BigDecimal totalValue;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

@@ -1,5 +1,6 @@
 package com.joaze.estoqueapi.service;
 
+import com.joaze.estoqueapi.dto.ProductDetailDto;
 import com.joaze.estoqueapi.dto.ProductResponseDto;
 import com.joaze.estoqueapi.dto.ProductRequestDto;
 import com.joaze.estoqueapi.model.Product;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,8 +27,9 @@ public class ProductService {
 
         product.setName(productDto.name());
         product.setDescription(productDto.description());
-        product.setPrice(productDto.price());
-        product.setQuantity(productDto.quantity());
+        product.setQuantity(0);
+        product.setAverageCost(BigDecimal.ZERO);
+        product.setTotalValue(BigDecimal.ZERO);
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
 
@@ -41,10 +44,19 @@ public class ProductService {
                  .toList();
     }
 
-    public ProductResponseDto searchProduct(Long id){
+    public ProductDetailDto searchProduct(Long id){
         Product productData = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        return this.toResponseDto(productData);
+        return new ProductDetailDto(
+                productData.getId(),
+                productData.getName(),
+                productData.getDescription(),
+                productData.getQuantity(),
+                productData.getAverageCost(),
+                productData.getTotalValue(),
+                productData.getCreatedAt(),
+                productData.getUpdatedAt()
+        );
     }
 
     @Transactional
@@ -54,8 +66,6 @@ public class ProductService {
 
         productData.setName(productDto.name());
         productData.setDescription(productDto.description());
-        productData.setPrice(productDto.price());
-        productData.setQuantity(productDto.quantity());
         productData.setUpdatedAt(LocalDateTime.now());
 
         return this.toResponseDto(productData);
@@ -72,8 +82,7 @@ public class ProductService {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getPrice(),
-                product.getQuantity()
+                product.getCreatedAt()
         );
     }
 }

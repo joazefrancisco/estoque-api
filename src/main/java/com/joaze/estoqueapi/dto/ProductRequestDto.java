@@ -11,11 +11,5 @@ public record ProductRequestDto(
         String name,
 
         @NotBlank
-        String description,
-
-        @NotNull
-        BigDecimal price,
-
-        @NotNull
-        Integer quantity
+        String description
 ) {}

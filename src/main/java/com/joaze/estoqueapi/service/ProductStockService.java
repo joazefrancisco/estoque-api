@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+// import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Service
@@ -27,10 +29,14 @@ public class ProductStockService {
         Product productData = productRepository.findById(movementDto.productId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-        productData.setQuantity(productData.getQuantity() + movementDto.quantity());
+        BigDecimal quantity = BigDecimal.valueOf(movementDto.quantity());
+
+        productData.setTotalValue(productData.getTotalValue().add(quantity.multiply(movementDto.unitCost())));
+        productData.setQuantity(productData.getQuantity() + movementDto.quantity());  // Dps alterar para RoundingMode
+        productData.setAverageCost(productData.getTotalValue().divide(quantity, 2, BigDecimal.ROUND_HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = this.createMovement(MovementType.ENTRADA, movementDto.quantity(), productData);
+        Movement movement = this.createMovement(MovementType.ENTRADA, movementDto, productData);
         movementRepository.save(movement);
     }
 
@@ -43,18 +49,23 @@ public class ProductStockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
+        BigDecimal valueOut = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
+
         productData.setQuantity(productData.getQuantity() - movementDto.quantity());
+        productData.setTotalValue(productData.getTotalValue().subtract(valueOut));
         productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = this.createMovement(MovementType.SAIDA, movementDto.quantity(), productData);
+        Movement movement = this.createMovement(MovementType.SAIDA, movementDto, productData);
         movementRepository.save(movement);
     }
 
-    private Movement createMovement(MovementType type, Integer quantity, Product product){
+    private Movement createMovement(MovementType type, MovementDto movementDto, Product product){
         Movement movement = new Movement();
 
         movement.setType(type);
-        movement.setQuantity(quantity);
+        movement.setQuantity(movementDto.quantity());
+        movement.setUnitCost(movementDto.unitCost());
+        movement.setValueTotal(BigDecimal.valueOf(movementDto.quantity()).multiply(movementDto.unitCost()));
         movement.setDate(LocalDateTime.now());
         movement.setProduct(product);
         return movement;

@@ -1,5 +1,6 @@
 package com.joaze.estoqueapi.controller;
 
+import com.joaze.estoqueapi.dto.ProductDetailDto;
 import com.joaze.estoqueapi.dto.ProductResponseDto;
 import com.joaze.estoqueapi.dto.ProductRequestDto;
 import com.joaze.estoqueapi.service.ProductService;
@@ -27,7 +28,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductResponseDto searchProduct(@PathVariable Long id){
+    public ProductDetailDto searchProduct(@PathVariable Long id){
         return productService.searchProduct(id);
     }
 
