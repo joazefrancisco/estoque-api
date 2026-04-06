@@ -1,6 +1,7 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.MovementDto;
+import com.joaze.estoqueapi.dto.MovementInDto;
+import com.joaze.estoqueapi.dto.MovementOutDto;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -25,7 +26,7 @@ public class ProductStockService {
     private ProductRepository productRepository;
 
     @Transactional
-    public void stockIn(MovementDto movementDto){
+    public void stockIn(MovementInDto movementDto){
         Product productData = productRepository.findById(movementDto.productId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -33,7 +34,7 @@ public class ProductStockService {
 
         productData.setTotalValue(productData.getTotalValue().add(quantity.multiply(movementDto.unitCost())));
         productData.setQuantity(productData.getQuantity() + movementDto.quantity());  // Dps alterar para RoundingMode
-        productData.setAverageCost(productData.getTotalValue().divide(quantity, 2, BigDecimal.ROUND_HALF_UP));
+        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 2, BigDecimal.ROUND_HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
         Movement movement = this.createMovement(MovementType.ENTRADA, movementDto, productData);
@@ -41,7 +42,7 @@ public class ProductStockService {
     }
 
     @Transactional
-    public void stockOut(MovementDto movementDto) {
+    public void stockOut(MovementOutDto movementDto) {
         Product productData = productRepository.findById(movementDto.productId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
@@ -51,15 +52,21 @@ public class ProductStockService {
 
         BigDecimal valueOut = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
 
+        Movement movement = new Movement();
+        movement.setType(MovementType.SAIDA);
+        movement.setQuantity(movementDto.quantity());
+        movement.setUnitCost(productData.getAverageCost());
+        movement.setValueTotal(valueOut);
+        movement.setDate(LocalDateTime.now());
+        movement.setProduct(productData);
+        movementRepository.save(movement);
+
         productData.setQuantity(productData.getQuantity() - movementDto.quantity());
         productData.setTotalValue(productData.getTotalValue().subtract(valueOut));
         productData.setUpdatedAt(LocalDateTime.now());
-
-        Movement movement = this.createMovement(MovementType.SAIDA, movementDto, productData);
-        movementRepository.save(movement);
     }
 
-    private Movement createMovement(MovementType type, MovementDto movementDto, Product product){
+    private Movement createMovement(MovementType type, MovementInDto movementDto, Product product){
         Movement movement = new Movement();
 
         movement.setType(type);
