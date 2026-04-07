@@ -1,4 +1,4 @@
-package com.joaze.estoqueapi.dto;
+package com.joaze.estoqueapi.dto.product;
 
 import java.time.LocalDateTime;
 

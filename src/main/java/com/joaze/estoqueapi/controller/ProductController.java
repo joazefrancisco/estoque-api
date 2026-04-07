@@ -1,8 +1,8 @@
 package com.joaze.estoqueapi.controller;
 
-import com.joaze.estoqueapi.dto.ProductDetailDto;
-import com.joaze.estoqueapi.dto.ProductResponseDto;
-import com.joaze.estoqueapi.dto.ProductRequestDto;
+import com.joaze.estoqueapi.dto.product.ProductDetailDto;
+import com.joaze.estoqueapi.dto.product.ProductResponseDto;
+import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.ProductDetailDto;
-import com.joaze.estoqueapi.dto.ProductResponseDto;
-import com.joaze.estoqueapi.dto.ProductRequestDto;
+import com.joaze.estoqueapi.dto.product.ProductDetailDto;
+import com.joaze.estoqueapi.dto.product.ProductResponseDto;
+import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;

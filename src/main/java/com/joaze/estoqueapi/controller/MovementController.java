@@ -1,8 +1,8 @@
 package com.joaze.estoqueapi.controller;
 
-import com.joaze.estoqueapi.dto.MovementInDto;
-import com.joaze.estoqueapi.dto.MovementOutDto;
-import com.joaze.estoqueapi.service.ProductStockService;
+import com.joaze.estoqueapi.dto.movement.MovementInDto;
+import com.joaze.estoqueapi.dto.movement.MovementOutDto;
+import com.joaze.estoqueapi.service.StockService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,15 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/movements")
 public class MovementController {
 
-    private ProductStockService productStockService;
+    private StockService stockService;
 
     @PostMapping("/stock-in")
     public void stockIn(@RequestBody @Valid MovementInDto movementDto){
-        productStockService.stockIn(movementDto);
+        stockService.stockIn(movementDto);
     }
 
     @PostMapping("/stock-out")
     public void stockOut(@RequestBody @Valid MovementOutDto movementDto){
-        productStockService.stockOut(movementDto);
+        stockService.stockOut(movementDto);
     }
 }

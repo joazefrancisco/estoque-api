@@ -1,4 +1,4 @@
-package com.joaze.estoqueapi.dto;
+package com.joaze.estoqueapi.dto.movement;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;

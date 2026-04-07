@@ -1,7 +1,7 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.MovementInDto;
-import com.joaze.estoqueapi.dto.MovementOutDto;
+import com.joaze.estoqueapi.dto.movement.MovementInDto;
+import com.joaze.estoqueapi.dto.movement.MovementOutDto;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
-public class ProductStockService {
+public class StockService {
 
     private MovementRepository movementRepository;
 
@@ -34,7 +34,7 @@ public class ProductStockService {
 
         productData.setTotalValue(productData.getTotalValue().add(quantity.multiply(movementDto.unitCost())));
         productData.setQuantity(productData.getQuantity() + movementDto.quantity());  // Dps alterar para RoundingMode
-        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 2, BigDecimal.ROUND_HALF_UP));
+        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
         Movement movement = this.createMovement(MovementType.ENTRADA, movementDto, productData);
@@ -50,22 +50,32 @@ public class ProductStockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
-        BigDecimal valueOut = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
+        BigDecimal movementValue = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
+        boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());
 
         Movement movement = new Movement();
         movement.setType(MovementType.SAIDA);
         movement.setQuantity(movementDto.quantity());
         movement.setUnitCost(productData.getAverageCost());
-        movement.setValueTotal(valueOut);
         movement.setDate(LocalDateTime.now());
         movement.setProduct(productData);
-        movementRepository.save(movement);
+
+        if (isLastStockMovement){
+            movement.setValueTotal(productData.getTotalValue());
+            productData.setTotalValue(BigDecimal.ZERO);
+            productData.setAverageCost(BigDecimal.ZERO);
+        } else {
+            movement.setValueTotal(movementValue);
+            productData.setTotalValue(productData.getTotalValue().subtract(movementValue));
+        }
 
         productData.setQuantity(productData.getQuantity() - movementDto.quantity());
-        productData.setTotalValue(productData.getTotalValue().subtract(valueOut));
         productData.setUpdatedAt(LocalDateTime.now());
+
+        movementRepository.save(movement);
     }
 
+    // Refatorar aqui
     private Movement createMovement(MovementType type, MovementInDto movementDto, Product product){
         Movement movement = new Movement();
 
