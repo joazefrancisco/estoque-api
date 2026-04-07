@@ -7,13 +7,14 @@ import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -38,10 +39,8 @@ public class ProductService {
         return this.toResponseDto(product);
     }
 
-    public List<ProductResponseDto> findAll(){
-         return productRepository.findAll().stream()
-                 .map(this::toResponseDto)
-                 .toList();
+    public Page<ProductResponseDto> findAll(Pageable pageable){
+         return productRepository.findAll(pageable).map(this::toResponseDto);
     }
 
     public ProductDetailDto searchProduct(Long id){

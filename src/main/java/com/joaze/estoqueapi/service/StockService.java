@@ -2,6 +2,7 @@ package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.MovementInDto;
 import com.joaze.estoqueapi.dto.movement.MovementOutDto;
+import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -9,6 +10,8 @@ import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -73,6 +76,33 @@ public class StockService {
         productData.setUpdatedAt(LocalDateTime.now());
 
         movementRepository.save(movement);
+    }
+
+    public MovementDetailDto searchMovement(Long id){
+        Movement movementData = movementRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+
+        return new MovementDetailDto(
+                movementData.getId(),
+                movementData.getType(),
+                movementData.getQuantity(),
+                movementData.getUnitCost(),
+                movementData.getValueTotal(),
+                movementData.getDate(),
+                movementData.getProduct()
+        );
+    }
+
+    public Page<MovementDetailDto> findAll(Pageable pageable){
+        return movementRepository.findAll(pageable).map(movementData -> new MovementDetailDto(
+                movementData.getId(),
+                movementData.getType(),
+                movementData.getQuantity(),
+                movementData.getUnitCost(),
+                movementData.getValueTotal(),
+                movementData.getDate(),
+                movementData.getProduct()
+        ));
     }
 
     // Refatorar aqui
