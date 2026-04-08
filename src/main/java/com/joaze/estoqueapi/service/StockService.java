@@ -30,38 +30,36 @@ public class StockService {
 
     @Transactional
     public void stockIn(MovementInDto movementDto){
-        Product productData = productRepository.findById(movementDto.productId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product productData = this.findProductOrThrow(movementDto.productId());
 
-        BigDecimal quantity = BigDecimal.valueOf(movementDto.quantity());
+        BigDecimal quantityIn = BigDecimal.valueOf(movementDto.quantity());
+        BigDecimal valueTotalIn = quantityIn.multiply(movementDto.unitCost());
 
-        productData.setTotalValue(productData.getTotalValue().add(quantity.multiply(movementDto.unitCost())));
+        productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
         productData.setQuantity(productData.getQuantity() + movementDto.quantity());  // Dps alterar para RoundingMode
         productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = this.createMovement(MovementType.ENTRADA, movementDto, productData);
+        Movement movement = this.createMovement(MovementType.ENTRADA, movementDto.quantity(), productData);
+        movement.setValueTotal(valueTotalIn);
+        movement.setUnitCost(movementDto.unitCost());
         movementRepository.save(movement);
     }
 
     @Transactional
     public void stockOut(MovementOutDto movementDto) {
-        Product productData = productRepository.findById(movementDto.productId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product productData = this.findProductOrThrow(movementDto.productId());
 
         if (movementDto.quantity() > productData.getQuantity()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
+        Movement movement = this.createMovement(MovementType.SAIDA, movementDto.quantity(), productData);
+        movement.setUnitCost(productData.getAverageCost());
+        movement.setProduct(productData);
+
         BigDecimal movementValue = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
         boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());
-
-        Movement movement = new Movement();
-        movement.setType(MovementType.SAIDA);
-        movement.setQuantity(movementDto.quantity());
-        movement.setUnitCost(productData.getAverageCost());
-        movement.setDate(LocalDateTime.now());
-        movement.setProduct(productData);
 
         if (isLastStockMovement){
             movement.setValueTotal(productData.getTotalValue());
@@ -81,40 +79,38 @@ public class StockService {
     public MovementDetailDto searchMovement(Long id){
         Movement movementData = movementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-
-        return new MovementDetailDto(
-                movementData.getId(),
-                movementData.getType(),
-                movementData.getQuantity(),
-                movementData.getUnitCost(),
-                movementData.getValueTotal(),
-                movementData.getDate(),
-                movementData.getProduct()
-        );
+        return this.toMovementDetailDto(movementData);
     }
 
     public Page<MovementDetailDto> findAll(Pageable pageable){
-        return movementRepository.findAll(pageable).map(movementData -> new MovementDetailDto(
-                movementData.getId(),
-                movementData.getType(),
-                movementData.getQuantity(),
-                movementData.getUnitCost(),
-                movementData.getValueTotal(),
-                movementData.getDate(),
-                movementData.getProduct()
-        ));
+        return movementRepository.findAll(pageable).map(this::toMovementDetailDto);
     }
 
-    // Refatorar aqui
-    private Movement createMovement(MovementType type, MovementInDto movementDto, Product product){
-        Movement movement = new Movement();
 
+    // Private function
+    private Product findProductOrThrow(Long id){
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    private Movement createMovement(MovementType type,  Integer quantity, Product product){
+        Movement movement = new Movement();
         movement.setType(type);
-        movement.setQuantity(movementDto.quantity());
-        movement.setUnitCost(movementDto.unitCost());
-        movement.setValueTotal(BigDecimal.valueOf(movementDto.quantity()).multiply(movementDto.unitCost()));
+        movement.setQuantity(quantity);
         movement.setDate(LocalDateTime.now());
         movement.setProduct(product);
         return movement;
+    }
+
+    private MovementDetailDto toMovementDetailDto(Movement movement){
+        return new MovementDetailDto(
+                movement.getId(),
+                movement.getType(),
+                movement.getQuantity(),
+                movement.getUnitCost(),
+                movement.getValueTotal(),
+                movement.getDate(),
+                movement.getProduct()
+        );
     }
 }
