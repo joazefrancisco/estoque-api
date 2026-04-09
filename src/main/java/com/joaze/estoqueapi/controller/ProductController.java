@@ -1,7 +1,7 @@
 package com.joaze.estoqueapi.controller;
 
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
-import com.joaze.estoqueapi.dto.product.ProductResponseDto;
+import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.service.ProductService;
 import jakarta.validation.Valid;
@@ -12,8 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @AllArgsConstructor
 @RequestMapping("/products")
@@ -22,12 +20,12 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping
-    public ProductResponseDto createProduct(@RequestBody @Valid ProductRequestDto productDto){
+    public ProductSummaryDto createProduct(@RequestBody @Valid ProductRequestDto productDto){
         return productService.createProduct(productDto);
     }
 
     @GetMapping
-    public Page<ProductResponseDto> findAll(
+    public Page<ProductSummaryDto> findAll(
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
             Pageable pageable){
         return productService.findAll(pageable);
@@ -39,7 +37,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ProductResponseDto updateProduct(@PathVariable Long id,@RequestBody @Valid ProductRequestDto productDto){
+    public ProductSummaryDto updateProduct(@PathVariable Long id, @RequestBody @Valid ProductRequestDto productDto){
         return productService.updateProduct(id ,productDto);
     }
 

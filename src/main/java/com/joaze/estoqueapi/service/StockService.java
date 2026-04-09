@@ -1,9 +1,6 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.movement.MovementInDto;
-import com.joaze.estoqueapi.dto.movement.MovementOutDto;
-import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
-import com.joaze.estoqueapi.dto.movement.MovementSummaryDto;
+import com.joaze.estoqueapi.dto.movement.*;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -30,7 +27,7 @@ public class StockService {
     private ProductRepository productRepository;
 
     @Transactional
-    public void stockIn(MovementInDto movementDto){
+    public MovementResponseDto stockIn(MovementInDto movementDto){
         Product productData = this.findProductOrThrow(movementDto.productId());
 
         BigDecimal quantityIn = BigDecimal.valueOf(movementDto.quantity());
@@ -45,10 +42,13 @@ public class StockService {
         movement.setValueTotal(valueTotalIn);
         movement.setUnitCost(movementDto.unitCost());
         movementRepository.save(movement);
+
+        String message = "Stock entry successfully completed.";
+        return this.createMovementResponseDto(true, message, movement, productData);
     }
 
     @Transactional
-    public void stockOut(MovementOutDto movementDto) {
+    public MovementResponseDto stockOut(MovementOutDto movementDto) {
         Product productData = this.findProductOrThrow(movementDto.productId());
 
         if (movementDto.quantity() > productData.getQuantity()){
@@ -75,6 +75,8 @@ public class StockService {
         productData.setUpdatedAt(LocalDateTime.now());
 
         movementRepository.save(movement);
+        String message = "Stock withdrawal successfully completed.";
+        return this.createMovementResponseDto(true, message, movement, productData);
     }
 
     public MovementDetailDto searchMovement(Long id){
@@ -116,5 +118,18 @@ public class StockService {
         movement.setDate(LocalDateTime.now());
         movement.setProduct(product);
         return movement;
+    }
+
+    private MovementResponseDto createMovementResponseDto(Boolean success, String message, Movement movement, Product product){
+        return new MovementResponseDto(
+                success,
+                message,
+                movement.getId(),
+                product.getId(),
+                movement.getQuantity(),
+                movement.getUnitCost(),
+                movement.getValueTotal(),
+                product.getQuantity()
+        );
     }
 }

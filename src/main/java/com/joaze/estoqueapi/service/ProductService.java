@@ -1,7 +1,7 @@
 package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
-import com.joaze.estoqueapi.dto.product.ProductResponseDto;
+import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.ProductRepository;
@@ -23,7 +23,7 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto productDto){
+    public ProductSummaryDto createProduct(ProductRequestDto productDto){
         Product product = new Product();
 
         product.setName(productDto.name());
@@ -39,7 +39,7 @@ public class ProductService {
         return this.toResponseDto(product);
     }
 
-    public Page<ProductResponseDto> findAll(Pageable pageable){
+    public Page<ProductSummaryDto> findAll(Pageable pageable){
          return productRepository.findAll(pageable).map(this::toResponseDto);
     }
 
@@ -58,7 +58,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto){
+    public ProductSummaryDto updateProduct(Long id, ProductRequestDto productDto){
         Product productData = this.findProductOrThrow(id);
 
         productData.setName(productDto.name());
@@ -78,8 +78,8 @@ public class ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     }
 
-    private ProductResponseDto toResponseDto(Product product){
-        return new ProductResponseDto(
+    private ProductSummaryDto toResponseDto(Product product){
+        return new ProductSummaryDto(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),

@@ -2,7 +2,7 @@ package com.joaze.estoqueapi.dto.product;
 
 import java.time.LocalDateTime;
 
-public record ProductResponseDto(
+public record ProductSummaryDto(
 
         Long id,
         String name,
