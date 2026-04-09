@@ -3,6 +3,7 @@ package com.joaze.estoqueapi.service;
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
+import com.joaze.estoqueapi.mapper.ProductMapper;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -13,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,37 +24,18 @@ public class ProductService {
 
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto){
-        Product product = new Product();
-
-        product.setName(productDto.name());
-        product.setDescription(productDto.description());
-        product.setQuantity(0);
-        product.setAverageCost(BigDecimal.ZERO);
-        product.setTotalValue(BigDecimal.ZERO);
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
-
+        Product product = ProductMapper.toEntity(productDto);
         productRepository.save(product);
-
-        return this.toResponseDto(product);
+        return ProductMapper.toProductSummaryDto(product);
     }
 
     public Page<ProductSummaryDto> findAll(Pageable pageable){
-         return productRepository.findAll(pageable).map(this::toResponseDto);
+         return productRepository.findAll(pageable).map(ProductMapper::toProductSummaryDto);
     }
 
     public ProductDetailDto searchProduct(Long id){
         Product productData = this.findProductOrThrow(id);
-        return new ProductDetailDto(
-                productData.getId(),
-                productData.getName(),
-                productData.getDescription(),
-                productData.getQuantity(),
-                productData.getAverageCost(),
-                productData.getTotalValue(),
-                productData.getCreatedAt(),
-                productData.getUpdatedAt()
-        );
+        return ProductMapper.toProductDetailDto(productData);
     }
 
     @Transactional
@@ -65,7 +46,7 @@ public class ProductService {
         productData.setDescription(productDto.description());
         productData.setUpdatedAt(LocalDateTime.now());
 
-        return this.toResponseDto(productData);
+        return ProductMapper.toProductSummaryDto(productData);
     }
 
     public void deleteProduct(Long id){
@@ -76,14 +57,5 @@ public class ProductService {
     private Product findProductOrThrow(Long id){
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-    }
-
-    private ProductSummaryDto toResponseDto(Product product){
-        return new ProductSummaryDto(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getCreatedAt()
-        );
     }
 }

@@ -1,6 +1,7 @@
 package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.*;
+import com.joaze.estoqueapi.mapper.MovementMapper;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -38,13 +39,15 @@ public class StockService {
         productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, RoundingMode.HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = this.createMovement(MovementType.ENTRADA, movementDto.quantity(), productData);
+        Movement movement = MovementMapper.toEntityIn(movementDto);
+        movement.setType(MovementType.ENTRADA);
         movement.setValueTotal(valueTotalIn);
         movement.setUnitCost(movementDto.unitCost());
+        movement.setDate(LocalDateTime.now());
+        movement.setProduct(productData);
         movementRepository.save(movement);
 
-        String message = "Stock entry successfully completed.";
-        return this.createMovementResponseDto(true, message, movement, productData);
+        return MovementMapper.toMovementResponseDto(movement);
     }
 
     @Transactional
@@ -55,9 +58,11 @@ public class StockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
-        Movement movement = this.createMovement(MovementType.SAIDA, movementDto.quantity(), productData);
+        Movement movement = MovementMapper.toEntityOut(movementDto);
+        movement.setType(MovementType.SAIDA);
         movement.setUnitCost(productData.getAverageCost());
         movement.setProduct(productData);
+        movement.setDate(LocalDateTime.now());
 
         BigDecimal movementValue = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
         boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());
@@ -75,61 +80,21 @@ public class StockService {
         productData.setUpdatedAt(LocalDateTime.now());
 
         movementRepository.save(movement);
-        String message = "Stock withdrawal successfully completed.";
-        return this.createMovementResponseDto(true, message, movement, productData);
+        return MovementMapper.toMovementResponseDto(movement);
     }
 
     public MovementDetailDto searchMovement(Long id){
         Movement movementData = movementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-        return new MovementDetailDto(
-                movementData.getId(),
-                movementData.getType(),
-                movementData.getQuantity(),
-                movementData.getUnitCost(),
-                movementData.getValueTotal().setScale(2, RoundingMode.HALF_UP),
-                movementData.getDate(),
-                movementData.getProduct().getId()
-        );
+        return MovementMapper.toMovementDetailDto(movementData);
     }
 
     public Page<MovementSummaryDto> findAll(Pageable pageable){
-        return movementRepository.findAll(pageable).map(movementData -> new MovementSummaryDto(
-                movementData.getId(),
-                movementData.getType(),
-                movementData.getQuantity(),
-                movementData.getValueTotal().setScale(2, RoundingMode.HALF_UP),
-                movementData.getDate(),
-                movementData.getProduct().getId()
-        ));
+        return movementRepository.findAll(pageable).map(MovementMapper::toMovementSummaryDto);
     }
 
-
-    // Private function
     private Product findProductOrThrow(Long id){
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-    }
-
-    private Movement createMovement(MovementType type,  Integer quantity, Product product){
-        Movement movement = new Movement();
-        movement.setType(type);
-        movement.setQuantity(quantity);
-        movement.setDate(LocalDateTime.now());
-        movement.setProduct(product);
-        return movement;
-    }
-
-    private MovementResponseDto createMovementResponseDto(Boolean success, String message, Movement movement, Product product){
-        return new MovementResponseDto(
-                success,
-                message,
-                movement.getId(),
-                product.getId(),
-                movement.getQuantity(),
-                movement.getUnitCost(),
-                movement.getValueTotal(),
-                product.getQuantity()
-        );
     }
 }
