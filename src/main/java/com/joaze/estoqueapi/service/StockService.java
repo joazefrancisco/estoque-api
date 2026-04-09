@@ -3,6 +3,7 @@ package com.joaze.estoqueapi.service;
 import com.joaze.estoqueapi.dto.movement.MovementInDto;
 import com.joaze.estoqueapi.dto.movement.MovementOutDto;
 import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
+import com.joaze.estoqueapi.dto.movement.MovementSummaryDto;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-// import java.math.RoundingMode;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Service
@@ -36,8 +37,8 @@ public class StockService {
         BigDecimal valueTotalIn = quantityIn.multiply(movementDto.unitCost());
 
         productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
-        productData.setQuantity(productData.getQuantity() + movementDto.quantity());  // Dps alterar para RoundingMode
-        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, BigDecimal.ROUND_HALF_UP));
+        productData.setQuantity(productData.getQuantity() + movementDto.quantity());
+        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, RoundingMode.HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
         Movement movement = this.createMovement(MovementType.ENTRADA, movementDto.quantity(), productData);
@@ -79,11 +80,26 @@ public class StockService {
     public MovementDetailDto searchMovement(Long id){
         Movement movementData = movementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-        return this.toMovementDetailDto(movementData);
+        return new MovementDetailDto(
+                movementData.getId(),
+                movementData.getType(),
+                movementData.getQuantity(),
+                movementData.getUnitCost(),
+                movementData.getValueTotal().setScale(2, RoundingMode.HALF_UP),
+                movementData.getDate(),
+                movementData.getProduct().getId()
+        );
     }
 
-    public Page<MovementDetailDto> findAll(Pageable pageable){
-        return movementRepository.findAll(pageable).map(this::toMovementDetailDto);
+    public Page<MovementSummaryDto> findAll(Pageable pageable){
+        return movementRepository.findAll(pageable).map(movementData -> new MovementSummaryDto(
+                movementData.getId(),
+                movementData.getType(),
+                movementData.getQuantity(),
+                movementData.getValueTotal().setScale(2, RoundingMode.HALF_UP),
+                movementData.getDate(),
+                movementData.getProduct().getId()
+        ));
     }
 
 
@@ -100,17 +116,5 @@ public class StockService {
         movement.setDate(LocalDateTime.now());
         movement.setProduct(product);
         return movement;
-    }
-
-    private MovementDetailDto toMovementDetailDto(Movement movement){
-        return new MovementDetailDto(
-                movement.getId(),
-                movement.getType(),
-                movement.getQuantity(),
-                movement.getUnitCost(),
-                movement.getValueTotal(),
-                movement.getDate(),
-                movement.getProduct()
-        );
     }
 }

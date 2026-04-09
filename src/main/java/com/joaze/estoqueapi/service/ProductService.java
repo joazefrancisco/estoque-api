@@ -44,8 +44,7 @@ public class ProductService {
     }
 
     public ProductDetailDto searchProduct(Long id){
-        Product productData = productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product productData = this.findProductOrThrow(id);
         return new ProductDetailDto(
                 productData.getId(),
                 productData.getName(),
@@ -60,8 +59,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto){
-        Product productData = productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Product productData = this.findProductOrThrow(id);
 
         productData.setName(productDto.name());
         productData.setDescription(productDto.description());
@@ -71,9 +69,13 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id){
-        Product product = productRepository.findById(id)
+        Product productData = this.findProductOrThrow(id);
+        productRepository.delete(productData);
+    }
+
+    private Product findProductOrThrow(Long id){
+        return productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        productRepository.delete(product);
     }
 
     private ProductResponseDto toResponseDto(Product product){

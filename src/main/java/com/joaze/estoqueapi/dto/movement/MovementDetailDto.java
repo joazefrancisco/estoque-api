@@ -13,5 +13,5 @@ public record MovementDetailDto(
         BigDecimal unitCost,
         BigDecimal valueTotal,
         LocalDateTime date,
-        Product productId
+        Long productId
 ) {}

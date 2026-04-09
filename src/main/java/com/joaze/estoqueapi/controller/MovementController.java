@@ -3,6 +3,7 @@ package com.joaze.estoqueapi.controller;
 import com.joaze.estoqueapi.dto.movement.MovementInDto;
 import com.joaze.estoqueapi.dto.movement.MovementOutDto;
 import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
+import com.joaze.estoqueapi.dto.movement.MovementSummaryDto;
 import com.joaze.estoqueapi.service.StockService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,7 @@ public class MovementController {
     }
 
     @GetMapping()
-    public Page<MovementDetailDto> findAll(
+    public Page<MovementSummaryDto> findAll(
            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
         return stockService.findAll(pageable);
     }

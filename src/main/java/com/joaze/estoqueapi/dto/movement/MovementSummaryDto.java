@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 
 public record MovementSummaryDto(
         Long id,
+        MovementType type,
         Integer quantity,
-        BigDecimal unitCost,
         BigDecimal valueTotal,
         LocalDateTime date,
-        Product productId
+        Long productId
 ) {
 }
