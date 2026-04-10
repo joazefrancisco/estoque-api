@@ -39,4 +39,18 @@ public class Product {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    private void prePersist(){
+        this.quantity = 0;
+        this.averageCost = BigDecimal.ZERO;
+        this.totalValue = BigDecimal.ZERO;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void preUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 }

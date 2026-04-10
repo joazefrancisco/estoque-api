@@ -14,9 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Service
 @AllArgsConstructor
 public class ProductService {
@@ -28,11 +25,6 @@ public class ProductService {
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto){
         Product product = productMapper.toEntity(productDto);
-        product.setQuantity(0);
-        product.setAverageCost(BigDecimal.ZERO);
-        product.setTotalValue(BigDecimal.ZERO);
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
         productRepository.save(product);
         return productMapper.toProductSummaryDto(product);
     }
@@ -49,11 +41,7 @@ public class ProductService {
     @Transactional
     public ProductSummaryDto updateProduct(Long id, ProductRequestDto productDto){
         Product productData = this.findProductOrThrow(id);
-
-        productData.setName(productDto.name());
-        productData.setDescription(productDto.description());
-        productData.setUpdatedAt(LocalDateTime.now());
-
+        productMapper.updateEntity(productData, productDto);
         return productMapper.toProductSummaryDto(productData);
     }
 

@@ -46,7 +46,6 @@ public class StockService {
         movement.setValueTotal(valueTotalIn);
         movement.setUnitCost(movementDto.unitCost());
         movement.setDate(LocalDateTime.now());
-        movement.setProduct(productData);
         movementRepository.save(movement);
 
         return movementMapper.toMovementResponseDto(movement);
@@ -64,7 +63,6 @@ public class StockService {
         movement.setType(MovementType.SAIDA);
         movement.setUnitCost(productData.getAverageCost());
         movement.setProduct(productData);
-        movement.setDate(LocalDateTime.now());
 
         BigDecimal movementValue = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
         boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());

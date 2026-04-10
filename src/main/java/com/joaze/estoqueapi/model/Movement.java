@@ -38,4 +38,9 @@ public class Movement {
     @ManyToOne
     @JoinColumn(name = "product_id" , nullable = false)
     private Product product;
+
+    @PrePersist
+    private void prePersist(){
+        this.date = LocalDateTime.now();
+    }
 }

@@ -19,6 +19,11 @@ public class ProductMapper {
         return product;
     }
 
+    public void updateEntity(Product product, ProductRequestDto productRequestDto){
+        product.setName(productRequestDto.name());
+        product.setDescription(productRequestDto.description());
+    }
+
     public ProductSummaryDto toProductSummaryDto(Product product){
         return new ProductSummaryDto(
                 product.getId(),
