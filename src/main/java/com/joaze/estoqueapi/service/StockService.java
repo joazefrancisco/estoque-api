@@ -27,6 +27,8 @@ public class StockService {
 
     private ProductRepository productRepository;
 
+    private MovementMapper movementMapper;
+
     @Transactional
     public MovementResponseDto stockIn(MovementInDto movementDto){
         Product productData = this.findProductOrThrow(movementDto.productId());
@@ -39,7 +41,7 @@ public class StockService {
         productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, RoundingMode.HALF_UP));
         productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = MovementMapper.toEntityIn(movementDto);
+        Movement movement = movementMapper.toEntityIn(movementDto);
         movement.setType(MovementType.ENTRADA);
         movement.setValueTotal(valueTotalIn);
         movement.setUnitCost(movementDto.unitCost());
@@ -47,7 +49,7 @@ public class StockService {
         movement.setProduct(productData);
         movementRepository.save(movement);
 
-        return MovementMapper.toMovementResponseDto(movement);
+        return movementMapper.toMovementResponseDto(movement);
     }
 
     @Transactional
@@ -58,7 +60,7 @@ public class StockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
-        Movement movement = MovementMapper.toEntityOut(movementDto);
+        Movement movement = movementMapper.toEntityOut(movementDto);
         movement.setType(MovementType.SAIDA);
         movement.setUnitCost(productData.getAverageCost());
         movement.setProduct(productData);
@@ -80,17 +82,17 @@ public class StockService {
         productData.setUpdatedAt(LocalDateTime.now());
 
         movementRepository.save(movement);
-        return MovementMapper.toMovementResponseDto(movement);
+        return movementMapper.toMovementResponseDto(movement);
     }
 
     public MovementDetailDto searchMovement(Long id){
         Movement movementData = movementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-        return MovementMapper.toMovementDetailDto(movementData);
+        return movementMapper.toMovementDetailDto(movementData);
     }
 
     public Page<MovementSummaryDto> findAll(Pageable pageable){
-        return movementRepository.findAll(pageable).map(MovementMapper::toMovementSummaryDto);
+        return movementRepository.findAll(pageable).map(movementMapper::toMovementSummaryDto);
     }
 
     private Product findProductOrThrow(Long id){

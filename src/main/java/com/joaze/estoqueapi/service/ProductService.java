@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -22,20 +23,27 @@ public class ProductService {
 
     private ProductRepository productRepository;
 
+    private ProductMapper productMapper;
+
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto){
-        Product product = ProductMapper.toEntity(productDto);
+        Product product = productMapper.toEntity(productDto);
+        product.setQuantity(0);
+        product.setAverageCost(BigDecimal.ZERO);
+        product.setTotalValue(BigDecimal.ZERO);
+        product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
         productRepository.save(product);
-        return ProductMapper.toProductSummaryDto(product);
+        return productMapper.toProductSummaryDto(product);
     }
 
     public Page<ProductSummaryDto> findAll(Pageable pageable){
-         return productRepository.findAll(pageable).map(ProductMapper::toProductSummaryDto);
+         return productRepository.findAll(pageable).map(productMapper::toProductSummaryDto);
     }
 
     public ProductDetailDto searchProduct(Long id){
         Product productData = this.findProductOrThrow(id);
-        return ProductMapper.toProductDetailDto(productData);
+        return productMapper.toProductDetailDto(productData);
     }
 
     @Transactional
@@ -46,7 +54,7 @@ public class ProductService {
         productData.setDescription(productDto.description());
         productData.setUpdatedAt(LocalDateTime.now());
 
-        return ProductMapper.toProductSummaryDto(productData);
+        return productMapper.toProductSummaryDto(productData);
     }
 
     public void deleteProduct(Long id){
