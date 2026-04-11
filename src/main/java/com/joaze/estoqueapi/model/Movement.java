@@ -30,7 +30,7 @@ public class Movement {
     private BigDecimal unitCost;
 
     @Column(nullable = false)
-    private BigDecimal valueTotal;
+    private BigDecimal totalValue;
 
     @Column(nullable = false)
     private LocalDateTime date;

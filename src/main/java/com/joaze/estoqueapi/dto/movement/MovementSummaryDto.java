@@ -9,7 +9,7 @@ public record MovementSummaryDto(
         Long id,
         MovementType type,
         Integer quantity,
-        BigDecimal valueTotal,
+        BigDecimal totalValue,
         LocalDateTime date,
         Long productId
 ) {

@@ -7,6 +7,6 @@ public record MovementResponseDto(
         Long productId,
         Integer quantity,
         BigDecimal unitCost,
-        BigDecimal valueTotal,
+        BigDecimal totalValue,
         Integer remainingQuantity
 ) {}

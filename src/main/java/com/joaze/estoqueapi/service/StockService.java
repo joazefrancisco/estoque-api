@@ -39,16 +39,10 @@ public class StockService {
         productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
         productData.setQuantity(productData.getQuantity() + movementDto.quantity());
         productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, RoundingMode.HALF_UP));
-        productData.setUpdatedAt(LocalDateTime.now());
 
-        Movement movement = movementMapper.toEntityIn(movementDto);
-        movement.setType(MovementType.ENTRADA);
-        movement.setValueTotal(valueTotalIn);
-        movement.setUnitCost(movementDto.unitCost());
-        movement.setDate(LocalDateTime.now());
+        Movement movement = movementMapper.toEntityIn(valueTotalIn, movementDto, productData);
         movementRepository.save(movement);
-
-        return movementMapper.toMovementResponseDto(movement);
+        return movementMapper.toResponseDto(movement);
     }
 
     @Transactional
@@ -59,38 +53,32 @@ public class StockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
-        Movement movement = movementMapper.toEntityOut(movementDto);
-        movement.setType(MovementType.SAIDA);
-        movement.setUnitCost(productData.getAverageCost());
-        movement.setProduct(productData);
-
-        BigDecimal movementValue = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
+        BigDecimal valueTotalOut = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
+        Movement movement = movementMapper.toEntityOut(valueTotalOut, productData.getAverageCost(), movementDto, productData);
         boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());
 
         if (isLastStockMovement){
-            movement.setValueTotal(productData.getTotalValue());
+            movement.setTotalValue(productData.getTotalValue());
             productData.setTotalValue(BigDecimal.ZERO);
             productData.setAverageCost(BigDecimal.ZERO);
         } else {
-            movement.setValueTotal(movementValue);
-            productData.setTotalValue(productData.getTotalValue().subtract(movementValue));
+            productData.setTotalValue(productData.getTotalValue().subtract(valueTotalOut));
         }
 
         productData.setQuantity(productData.getQuantity() - movementDto.quantity());
-        productData.setUpdatedAt(LocalDateTime.now());
 
         movementRepository.save(movement);
-        return movementMapper.toMovementResponseDto(movement);
+        return movementMapper.toResponseDto(movement);
     }
 
     public MovementDetailDto searchMovement(Long id){
         Movement movementData = movementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-        return movementMapper.toMovementDetailDto(movementData);
+        return movementMapper.toDetailDto(movementData);
     }
 
     public Page<MovementSummaryDto> findAll(Pageable pageable){
-        return movementRepository.findAll(pageable).map(movementMapper::toMovementSummaryDto);
+        return movementRepository.findAll(pageable).map(movementMapper::toSummaryDto);
     }
 
     private Product findProductOrThrow(Long id){

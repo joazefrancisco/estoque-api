@@ -24,7 +24,7 @@ public class ProductMapper {
         product.setDescription(productRequestDto.description());
     }
 
-    public ProductSummaryDto toProductSummaryDto(Product product){
+    public ProductSummaryDto toSummaryDto(Product product){
         return new ProductSummaryDto(
                 product.getId(),
                 product.getName(),
@@ -33,7 +33,7 @@ public class ProductMapper {
         );
     }
 
-    public ProductDetailDto toProductDetailDto(Product product){
+    public ProductDetailDto toDetailDto(Product product){
         return new ProductDetailDto(
                 product.getId(),
                 product.getName(),

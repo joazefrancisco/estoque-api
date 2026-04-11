@@ -11,7 +11,7 @@ public record MovementDetailDto(
         MovementType type,
         Integer quantity,
         BigDecimal unitCost,
-        BigDecimal valueTotal,
+        BigDecimal totalValue,
         LocalDateTime date,
         Long productId
 ) {}

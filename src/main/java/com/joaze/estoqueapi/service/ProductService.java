@@ -26,23 +26,23 @@ public class ProductService {
     public ProductSummaryDto createProduct(ProductRequestDto productDto){
         Product product = productMapper.toEntity(productDto);
         productRepository.save(product);
-        return productMapper.toProductSummaryDto(product);
+        return productMapper.toSummaryDto(product);
     }
 
     public Page<ProductSummaryDto> findAll(Pageable pageable){
-         return productRepository.findAll(pageable).map(productMapper::toProductSummaryDto);
+         return productRepository.findAll(pageable).map(productMapper::toSummaryDto);
     }
 
     public ProductDetailDto searchProduct(Long id){
         Product productData = this.findProductOrThrow(id);
-        return productMapper.toProductDetailDto(productData);
+        return productMapper.toDetailDto(productData);
     }
 
     @Transactional
     public ProductSummaryDto updateProduct(Long id, ProductRequestDto productDto){
         Product productData = this.findProductOrThrow(id);
         productMapper.updateEntity(productData, productDto);
-        return productMapper.toProductSummaryDto(productData);
+        return productMapper.toSummaryDto(productData);
     }
 
     public void deleteProduct(Long id){
