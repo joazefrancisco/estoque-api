@@ -1,6 +1,7 @@
 package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.*;
+import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementType;
@@ -17,30 +18,33 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
 public class StockService {
 
-    private MovementRepository movementRepository;
+    private final MovementRepository movementRepository;
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    private MovementMapper movementMapper;
+    private final MovementMapper movementMapper;
+
+    private final MovementFactory movementFactory;
+
+    private final StockCalculatorService stockCalculatorService;
 
     @Transactional
     public MovementResponseDto stockIn(MovementInDto movementDto){
         Product productData = this.findProductOrThrow(movementDto.productId());
 
-        BigDecimal quantityIn = BigDecimal.valueOf(movementDto.quantity());
-        BigDecimal valueTotalIn = quantityIn.multiply(movementDto.unitCost());
+        BigDecimal valueTotalIn = stockCalculatorService.calculateEntryTotal(movementDto.quantity(), movementDto.unitCost());
 
         productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
         productData.setQuantity(productData.getQuantity() + movementDto.quantity());
-        productData.setAverageCost(productData.getTotalValue().divide(BigDecimal.valueOf(productData.getQuantity()), 4, RoundingMode.HALF_UP));
+        productData.setAverageCost(stockCalculatorService.calculateAverageCost(productData.getTotalValue(), productData.getQuantity()));
 
-        Movement movement = movementMapper.toEntityIn(valueTotalIn, movementDto, productData);
+        Movement movement = movementFactory.createIn(movementDto, productData, valueTotalIn);
+
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
     }
@@ -53,11 +57,12 @@ public class StockService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
         }
 
-        BigDecimal valueTotalOut = BigDecimal.valueOf(movementDto.quantity()).multiply(productData.getAverageCost());
-        Movement movement = movementMapper.toEntityOut(valueTotalOut, productData.getAverageCost(), movementDto, productData);
-        boolean isLastStockMovement = productData.getQuantity().equals(movementDto.quantity());
+        BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, movementDto.quantity());
+        int newQuantity = productData.getQuantity() - movementDto.quantity();
 
-        if (isLastStockMovement){
+        Movement movement = movementFactory.createOut(movementDto, productData, valueTotalOut);
+
+        if (newQuantity == 0){
             movement.setTotalValue(productData.getTotalValue());
             productData.setTotalValue(BigDecimal.ZERO);
             productData.setAverageCost(BigDecimal.ZERO);
@@ -65,8 +70,7 @@ public class StockService {
             productData.setTotalValue(productData.getTotalValue().subtract(valueTotalOut));
         }
 
-        productData.setQuantity(productData.getQuantity() - movementDto.quantity());
-
+        productData.setQuantity(newQuantity);
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
     }

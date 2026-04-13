@@ -10,6 +10,6 @@ public record ProductDetailDto(
         Integer quantity,
         BigDecimal averageCost,
         BigDecimal totalValue,
-        LocalDateTime createAt,
-        LocalDateTime updateAt
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {}

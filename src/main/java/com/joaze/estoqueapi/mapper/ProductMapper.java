@@ -4,45 +4,25 @@ import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.model.Product;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+@Mapper(componentModel = "spring")
+public interface ProductMapper {
 
-@Component
-public class ProductMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "averageCost", ignore = true)
+    @Mapping(target = "totalValue", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    Product toEntity(ProductRequestDto productRequestDto);
 
-    public Product toEntity(ProductRequestDto productRequestDto){
-        Product product = new Product();
-        product.setName(productRequestDto.name());
-        product.setDescription(productRequestDto.description());
-        return product;
-    }
+    @Mapping(target = "id", ignore = true)
+    void updateEntity(@MappingTarget Product product, ProductRequestDto productRequestDto);
 
-    public void updateEntity(Product product, ProductRequestDto productRequestDto){
-        product.setName(productRequestDto.name());
-        product.setDescription(productRequestDto.description());
-    }
+    ProductSummaryDto toSummaryDto(Product product);
 
-    public ProductSummaryDto toSummaryDto(Product product){
-        return new ProductSummaryDto(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getCreatedAt()
-        );
-    }
-
-    public ProductDetailDto toDetailDto(Product product){
-        return new ProductDetailDto(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getQuantity(),
-                product.getAverageCost(),
-                product.getTotalValue(),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
-        );
-    }
+    ProductDetailDto toDetailDto(Product product);
 }

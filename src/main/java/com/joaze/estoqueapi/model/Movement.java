@@ -33,7 +33,7 @@ public class Movement {
     private BigDecimal totalValue;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "product_id" , nullable = false)
@@ -41,6 +41,6 @@ public class Movement {
 
     @PrePersist
     private void prePersist(){
-        this.date = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 }

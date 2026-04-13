@@ -7,5 +7,5 @@ public record ProductSummaryDto(
         Long id,
         String name,
         String description,
-        LocalDateTime createAt
+        LocalDateTime createdAt
 ) {}
