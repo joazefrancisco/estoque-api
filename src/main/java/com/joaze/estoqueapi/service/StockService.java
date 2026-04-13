@@ -1,10 +1,11 @@
 package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.*;
+import com.joaze.estoqueapi.exception.InsufficientStockException;
+import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
 import com.joaze.estoqueapi.model.Movement;
-import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Service
 @AllArgsConstructor
@@ -34,7 +34,7 @@ public class StockService {
     private final StockCalculatorService stockCalculatorService;
 
     @Transactional
-    public MovementResponseDto stockIn(MovementInDto movementDto){
+    public MovementResponseDto stockIn(MovementInDto movementDto) {
         Product productData = this.findProductOrThrow(movementDto.productId());
 
         BigDecimal valueTotalIn = stockCalculatorService.calculateEntryTotal(movementDto.quantity(), movementDto.unitCost());
@@ -53,8 +53,8 @@ public class StockService {
     public MovementResponseDto stockOut(MovementOutDto movementDto) {
         Product productData = this.findProductOrThrow(movementDto.productId());
 
-        if (movementDto.quantity() > productData.getQuantity()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock!");
+        if (movementDto.quantity() > productData.getQuantity()) {
+            throw new InsufficientStockException("Insufficient stock!");
         }
 
         BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, movementDto.quantity());
@@ -62,7 +62,7 @@ public class StockService {
 
         Movement movement = movementFactory.createOut(movementDto, productData, valueTotalOut);
 
-        if (newQuantity == 0){
+        if (newQuantity == 0) {
             movement.setTotalValue(productData.getTotalValue());
             productData.setTotalValue(BigDecimal.ZERO);
             productData.setAverageCost(BigDecimal.ZERO);
@@ -75,18 +75,18 @@ public class StockService {
         return movementMapper.toResponseDto(movement);
     }
 
-    public MovementDetailDto searchMovement(Long id){
+    public MovementDetailDto searchMovement(Long id) {
         Movement movementData = movementRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Movement not found"));
         return movementMapper.toDetailDto(movementData);
     }
 
-    public Page<MovementSummaryDto> findAll(Pageable pageable){
+    public Page<MovementSummaryDto> findAll(Pageable pageable) {
         return movementRepository.findAll(pageable).map(movementMapper::toSummaryDto);
     }
 
-    private Product findProductOrThrow(Long id){
+    private Product findProductOrThrow(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 }
