@@ -51,6 +51,6 @@ public class ProductService {
 
     private Product findProductOrThrow(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product id: " + id + " not found"));
     }
 }
