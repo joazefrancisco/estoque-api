@@ -17,9 +17,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class ProductService {
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    private ProductMapper productMapper;
+    private final ProductMapper productMapper;
 
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto) {

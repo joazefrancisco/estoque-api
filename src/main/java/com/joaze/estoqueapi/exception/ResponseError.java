@@ -1,8 +1,11 @@
 package com.joaze.estoqueapi.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record ResponseError(
         LocalDateTime timestamp,
         Integer status,
@@ -10,5 +13,4 @@ public record ResponseError(
         String message,
         String path,
         List<FieldErrorResponse> errors
-) {
-}
+) {}

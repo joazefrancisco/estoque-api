@@ -1,22 +1,23 @@
 package com.joaze.estoqueapi.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
-public class GlobalHandleException {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseError> handleGenericException(HttpServletRequest request){
+    public ResponseEntity<ResponseError> handleGenericException(Exception exception, HttpServletRequest request){
+        log.error("Unexpected error occurred", exception);
         ResponseError error = this.createResponseError(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", request, null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
@@ -28,7 +29,7 @@ public class GlobalHandleException {
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ResponseError> HandleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request){
+    public ResponseEntity<ResponseError> handleResourceNotFoundException(ResourceNotFoundException exception, HttpServletRequest request){
         ResponseError error = this.createResponseError(HttpStatus.NOT_FOUND, exception.getMessage(), request, null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
