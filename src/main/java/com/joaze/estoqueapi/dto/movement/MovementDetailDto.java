@@ -1,5 +1,7 @@
 package com.joaze.estoqueapi.dto.movement;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
 
@@ -12,6 +14,7 @@ public record MovementDetailDto(
         Integer quantity,
         BigDecimal unitCost,
         BigDecimal totalValue,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime date,
-        Long productId
+        ProductSummaryDto product
 ) {}

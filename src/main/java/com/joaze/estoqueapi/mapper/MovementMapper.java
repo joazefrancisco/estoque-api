@@ -5,7 +5,7 @@ import com.joaze.estoqueapi.model.Movement;
 import org.mapstruct.Mapper;
 
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = ProductMapper.class)
 public interface MovementMapper {
 
     MovementResponseDto toResponseDto(Movement movement);
@@ -13,4 +13,5 @@ public interface MovementMapper {
     MovementSummaryDto toSummaryDto(Movement movement);
 
     MovementDetailDto toDetailDto(Movement movement);
+
 }

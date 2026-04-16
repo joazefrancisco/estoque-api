@@ -1,8 +1,8 @@
 package com.joaze.estoqueapi.dto.movement;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
@@ -12,7 +12,7 @@ public record MovementInDto(
         Long productId,
 
         @NotNull(message = "Quantity must not be null")
-        @Min(value = 1, message = "Quantity must be at least 1")
+        @Positive(message = "Quantity must be at least 1")
         Integer quantity,
 
         @NotNull(message = "Unit cost must not be null")

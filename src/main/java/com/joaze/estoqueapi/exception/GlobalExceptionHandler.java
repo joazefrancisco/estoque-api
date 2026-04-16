@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         List<FieldErrorResponse> errorsResponse = exceptions.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> new FieldErrorResponse(fieldError.getField(), fieldError.getDefaultMessage())).toList();
 
-        ResponseError errors = this.createResponseError(HttpStatus.BAD_REQUEST, exceptions.getMessage(), request, errorsResponse);
+        ResponseError errors = this.createResponseError(HttpStatus.BAD_REQUEST, "Validation failed", request, errorsResponse);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
