@@ -13,5 +13,4 @@ public interface MovementMapper {
     MovementSummaryDto toSummaryDto(Movement movement);
 
     MovementDetailDto toDetailDto(Movement movement);
-
 }

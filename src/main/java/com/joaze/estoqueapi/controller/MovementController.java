@@ -1,7 +1,6 @@
 package com.joaze.estoqueapi.controller;
 
 import com.joaze.estoqueapi.dto.movement.*;
-import com.joaze.estoqueapi.dto.resposne.ApiResponse;
 import com.joaze.estoqueapi.service.StockService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,25 +20,25 @@ public class MovementController {
     private StockService stockService;
 
     @PostMapping("/stock-in")
-    public ResponseEntity<ApiResponse<MovementResponseDto>> stockIn(@RequestBody @Valid MovementInDto movementDto){
-        MovementResponseDto movement = stockService.stockIn(movementDto);
-        ApiResponse<MovementResponseDto> response = new ApiResponse<>("Stock entry created successfully", movement);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    public ResponseEntity<MovementResponseDto> stockIn(@RequestBody @Valid MovementInDto movementDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(stockService.stockIn(movementDto));
     }
 
     @PostMapping("/stock-out")
-    public void stockOut(@RequestBody @Valid MovementOutDto movementDto){
-        stockService.stockOut(movementDto);
+    public ResponseEntity<MovementResponseDto> stockOut(@RequestBody @Valid MovementOutDto movementDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(stockService.stockOut(movementDto));
     }
 
     @GetMapping("/{id}")
-    public MovementDetailDto searchMovement(@PathVariable Long id){
-        return stockService.searchMovement(id);
+    public ResponseEntity<MovementDetailDto> searchMovement(@PathVariable Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(stockService.searchMovement(id));
     }
 
     @GetMapping()
-    public Page<MovementSummaryDto> findAll(
+    public ResponseEntity<Page<MovementSummaryDto>> findAll(
            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable){
-        return stockService.findAll(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(stockService.findAll(pageable));
     }
+
+    // Depois fazer deleteMovement e updateMovement.
 }
