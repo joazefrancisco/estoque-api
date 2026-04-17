@@ -1,6 +1,7 @@
 package com.joaze.estoqueapi.dto.movement;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
