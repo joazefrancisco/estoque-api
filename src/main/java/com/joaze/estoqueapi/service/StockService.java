@@ -1,6 +1,8 @@
 package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.*;
+import com.joaze.estoqueapi.dto.stock.MovementInDto;
+import com.joaze.estoqueapi.dto.stock.MovementOutDto;
 import com.joaze.estoqueapi.exception.InsufficientStockException;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.factory.MovementFactory;
@@ -11,8 +13,6 @@ import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,33 +32,33 @@ public class StockService {
     private final StockCalculatorService stockCalculatorService;
 
     @Transactional
-    public MovementResponseDto stockIn(MovementInDto movementDto) {
-        Product productData = this.findProductOrThrow(movementDto.productId());
+    public MovementResponseDto stockIn(MovementInDto dto) {
+        Product productData = this.findProductOrThrow(dto.productId());
 
-        BigDecimal valueTotalIn = stockCalculatorService.calculateEntryTotal(movementDto.quantity(), movementDto.unitCost());
+        BigDecimal valueTotalIn = stockCalculatorService.calculateValueTotal(dto.quantity(), dto.unitCost());
 
         productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
-        productData.setQuantity(productData.getQuantity() + movementDto.quantity());
+        productData.setQuantity(productData.getQuantity() + dto.quantity());
         productData.setAverageCost(stockCalculatorService.calculateAverageCost(productData.getTotalValue(), productData.getQuantity()));
 
-        Movement movement = movementFactory.createIn(movementDto, productData, valueTotalIn);
+        Movement movement = movementFactory.createIn(dto, productData, valueTotalIn);
 
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
     }
 
     @Transactional
-    public MovementResponseDto stockOut(MovementOutDto movementDto) {
-        Product productData = this.findProductOrThrow(movementDto.productId());
+    public MovementResponseDto stockOut(MovementOutDto dto) {
+        Product productData = this.findProductOrThrow(dto.productId());
 
-        if (movementDto.quantity() > productData.getQuantity()) {
+        if (dto.quantity() > productData.getQuantity()) {
             throw new InsufficientStockException("Insufficient stock!");
         }
 
-        BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, movementDto.quantity());
-        int newQuantity = productData.getQuantity() - movementDto.quantity();
+        BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, dto.quantity());
+        int newQuantity = productData.getQuantity() - dto.quantity();
 
-        Movement movement = movementFactory.createOut(movementDto, productData, valueTotalOut);
+        Movement movement = movementFactory.createOut(dto, productData, valueTotalOut);
 
         if (newQuantity == 0) {
             movement.setTotalValue(productData.getTotalValue());
@@ -71,16 +71,6 @@ public class StockService {
         productData.setQuantity(newQuantity);
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
-    }
-
-    public MovementDetailDto searchMovement(Long id) {
-        Movement movementData = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found"));
-        return movementMapper.toDetailDto(movementData);
-    }
-
-    public Page<MovementSummaryDto> findAll(Pageable pageable) {
-        return movementRepository.findAll(pageable).map(movementMapper::toSummaryDto);
     }
 
     private Product findProductOrThrow(Long id) {

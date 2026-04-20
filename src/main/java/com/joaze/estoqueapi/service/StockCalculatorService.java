@@ -9,7 +9,7 @@ import java.math.RoundingMode;
 @Service
 public class StockCalculatorService {
 
-    public BigDecimal calculateEntryTotal(Integer quantity, BigDecimal unitCost){
+    public BigDecimal calculateValueTotal(Integer quantity, BigDecimal unitCost){
         if (quantity == 0) return BigDecimal.ZERO;
         return BigDecimal.valueOf(quantity).multiply(unitCost);
     }
@@ -25,5 +25,14 @@ public class StockCalculatorService {
                 .divide(BigDecimal.valueOf(product.getQuantity()), 10, RoundingMode.HALF_UP);
 
         return unitRealCost.multiply(BigDecimal.valueOf(quantityOut));
+    }
+
+    public Integer recalculationOfQuantityInStock(Integer newQuantity, Integer oldQuantity){
+        return newQuantity - oldQuantity;
+    }
+
+    public BigDecimal recalculationOfValueTotalInStock(Integer newQuantity, BigDecimal newUnitCost, BigDecimal oldValueTotal){
+        BigDecimal newValueTotalMovement = this.calculateValueTotal(newQuantity, newUnitCost);
+        return newValueTotalMovement.add(oldValueTotal);
     }
 }

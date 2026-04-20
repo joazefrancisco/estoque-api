@@ -24,6 +24,10 @@ public class Movement {
     private MovementType type;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private MovementStatus status;
+
+    @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false)
@@ -35,9 +39,17 @@ public class Movement {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    private LocalDateTime correctedAt;
+
+    private LocalDateTime canceledAt;
+
     @ManyToOne
     @JoinColumn(name = "product_id" , nullable = false)
     private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "movement_reference_id")
+    Movement movementReference;
 
     @PrePersist
     private void prePersist(){

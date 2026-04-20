@@ -1,8 +1,9 @@
 package com.joaze.estoqueapi.factory;
 
-import com.joaze.estoqueapi.dto.movement.MovementInDto;
-import com.joaze.estoqueapi.dto.movement.MovementOutDto;
+import com.joaze.estoqueapi.dto.stock.MovementInDto;
+import com.joaze.estoqueapi.dto.stock.MovementOutDto;
 import com.joaze.estoqueapi.model.Movement;
+import com.joaze.estoqueapi.model.MovementStatus;
 import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ public class MovementFactory {
         movement.setUnitCost(dto.unitCost());
         movement.setTotalValue(valueTotal);
         movement.setProduct(product);
+        movement.setStatus(MovementStatus.SUCCESS);
         return movement;
     }
 
@@ -29,6 +31,7 @@ public class MovementFactory {
         movement.setUnitCost(product.getAverageCost());
         movement.setTotalValue(valueTotal);
         movement.setProduct(product);
+        movement.setStatus(MovementStatus.SUCCESS);
         return movement;
     }
 }

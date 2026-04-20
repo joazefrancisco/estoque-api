@@ -1,15 +1,16 @@
 package com.joaze.estoqueapi.dto.movement;
 
+import com.joaze.estoqueapi.model.MovementType;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record MovementInDto(
-
-        @NotNull(message = "Product ID must not be null")
-        Long productId,
+public record correctedRequestDto(
+        @NotBlank(message = "Type must not be blank")
+        MovementType type,
 
         @NotNull(message = "Quantity must not be null")
         @Positive(message = "Quantity must be at least 1")
