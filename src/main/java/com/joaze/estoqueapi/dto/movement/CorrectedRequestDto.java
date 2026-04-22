@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record correctedRequestDto(
+public record CorrectedRequestDto(
         @NotBlank(message = "Type must not be blank")
         MovementType type,
 

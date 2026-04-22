@@ -41,7 +41,7 @@ public class StockService {
         productData.setQuantity(productData.getQuantity() + dto.quantity());
         productData.setAverageCost(stockCalculatorService.calculateAverageCost(productData.getTotalValue(), productData.getQuantity()));
 
-        Movement movement = movementFactory.createIn(dto, productData, valueTotalIn);
+        Movement movement = movementFactory.createIn(dto, productData, valueTotalIn, null);
 
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
@@ -58,7 +58,7 @@ public class StockService {
         BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, dto.quantity());
         int newQuantity = productData.getQuantity() - dto.quantity();
 
-        Movement movement = movementFactory.createOut(dto, productData, valueTotalOut);
+        Movement movement = movementFactory.createOut(dto, productData, valueTotalOut, null);
 
         if (newQuantity == 0) {
             movement.setTotalValue(productData.getTotalValue());

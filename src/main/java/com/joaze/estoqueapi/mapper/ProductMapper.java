@@ -1,5 +1,6 @@
 package com.joaze.estoqueapi.mapper;
 
+import com.joaze.estoqueapi.dto.movement.CorrectedRequestDto;
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
@@ -25,4 +26,6 @@ public interface ProductMapper {
     ProductSummaryDto toSummaryDto(Product product);
 
     ProductDetailDto toDetailDto(Product product);
+
+    CorrectedRequestDto
 }

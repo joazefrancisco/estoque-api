@@ -1,5 +1,7 @@
 package com.joaze.estoqueapi.service;
 
+import com.joaze.estoqueapi.dto.movement.CorrectedRequestDto;
+import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.Product;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +29,15 @@ public class StockCalculatorService {
         return unitRealCost.multiply(BigDecimal.valueOf(quantityOut));
     }
 
-    public Integer recalculationOfQuantityInStock(Integer newQuantity, Integer oldQuantity){
-        return newQuantity - oldQuantity;
-    }
+    public void balanceAdjustment(CorrectedRequestDto dto, Movement movement,  Product product){
+        BigDecimal correctValueTotal = this.calculateValueTotal(dto.quantity(), dto.unitCost());
 
-    public BigDecimal recalculationOfValueTotalInStock(Integer newQuantity, BigDecimal newUnitCost, BigDecimal oldValueTotal){
-        BigDecimal newValueTotalMovement = this.calculateValueTotal(newQuantity, newUnitCost);
-        return newValueTotalMovement.add(oldValueTotal);
+        Integer quantityAdjustment = product.getQuantity() + (dto.quantity() - movement.getQuantity());
+        BigDecimal valueTotalAdjustment = product.getTotalValue().add(correctValueTotal.subtract(movement.getTotalValue()));
+        BigDecimal averageCostAdjustment = this.calculateAverageCost(valueTotalAdjustment , quantityAdjustment);
+
+        product.setQuantity(quantityAdjustment);
+        product.setTotalValue(valueTotalAdjustment);
+        product.setAverageCost(averageCostAdjustment);
     }
 }

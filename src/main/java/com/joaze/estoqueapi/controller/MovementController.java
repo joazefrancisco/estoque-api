@@ -30,9 +30,9 @@ public class MovementController {
         return ResponseEntity.status(HttpStatus.OK).body(movementService.findAll(pageable));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MovementUpdateResponseDto> toCorrectMovement(Long id, @RequestBody @Valid correctedRequestDto dto){
-        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovement(id, dto));
+    @PutMapping("/{id}correct")
+    public ResponseEntity<MovementUpdateResponseDto> toCorrectMovement(Long id, @RequestBody @Valid CorrectedRequestDto dto){
+        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementIn(id, dto));
     }
 
     @DeleteMapping("/{id}")

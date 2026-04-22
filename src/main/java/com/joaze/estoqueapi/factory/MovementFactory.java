@@ -13,25 +13,27 @@ import java.math.BigDecimal;
 @Component
 public class MovementFactory {
 
-    public Movement createIn(MovementInDto dto, Product product, BigDecimal valueTotal){
+    public Movement createIn(MovementInDto dto, Product product, BigDecimal valueTotal, Movement movementReference){
         Movement movement = new Movement();
-        movement.setType(MovementType.ENTRADA);
+        movement.setType(MovementType.IN);
+        movement.setStatus(MovementStatus.ACTIVE);
         movement.setQuantity(dto.quantity());
         movement.setUnitCost(dto.unitCost());
         movement.setTotalValue(valueTotal);
         movement.setProduct(product);
-        movement.setStatus(MovementStatus.SUCCESS);
+        movement.setMovementReference(movementReference);
         return movement;
     }
 
-    public Movement createOut(MovementOutDto dto, Product product, BigDecimal valueTotal){
+    public Movement createOut(MovementOutDto dto, Product product, BigDecimal valueTotal, Movement movementReference){
         Movement movement = new Movement();
-        movement.setType(MovementType.SAIDA);
+        movement.setType(MovementType.OUT);
+        movement.setStatus(MovementStatus.ACTIVE);
         movement.setQuantity(dto.quantity());
         movement.setUnitCost(product.getAverageCost());
         movement.setTotalValue(valueTotal);
         movement.setProduct(product);
-        movement.setStatus(MovementStatus.SUCCESS);
+        movement.setMovementReference(movementReference);
         return movement;
     }
 }

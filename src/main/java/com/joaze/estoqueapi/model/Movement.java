@@ -55,4 +55,9 @@ public class Movement {
     private void prePersist(){
         this.createdAt = LocalDateTime.now();
     }
+
+    @PreUpdate
+    private void preUpdate(){
+        this.correctedAt = LocalDateTime.now();
+    }
 }

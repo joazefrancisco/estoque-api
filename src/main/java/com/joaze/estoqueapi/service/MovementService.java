@@ -2,9 +2,11 @@ package com.joaze.estoqueapi.service;
 
 import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
 import com.joaze.estoqueapi.dto.movement.MovementSummaryDto;
-import com.joaze.estoqueapi.dto.movement.correctedRequestDto;
+import com.joaze.estoqueapi.dto.movement.CorrectedRequestDto;
 import com.joaze.estoqueapi.dto.movement.MovementUpdateResponseDto;
+import com.joaze.estoqueapi.dto.stock.MovementInDto;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
+import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
 import com.joaze.estoqueapi.model.Movement;
 import com.joaze.estoqueapi.model.MovementStatus;
@@ -27,6 +29,8 @@ public class MovementService {
 
     private final MovementMapper movementMapper;
 
+    private final MovementFactory movementFactory;
+
     private final StockCalculatorService stockCalculatorService;
 
     public MovementDetailDto searchMovement(Long id) {
@@ -39,27 +43,17 @@ public class MovementService {
     }
 
     @Transactional
-    public MovementUpdateResponseDto toCorrectMovement(Long id, correctedRequestDto dto){
+    public MovementUpdateResponseDto toCorrectMovementIn(Long id, CorrectedRequestDto dto){
         Movement movementData = this.findMovementOrThrow(id);
         movementData.setStatus(MovementStatus.CORRECTED);
-
         Product productData = movementData.getProduct();
 
-        Integer newQuantityMovement = stockCalculatorService.recalculationOfQuantityInStock(
-                dto.quantity(), movementData.getQuantity()
-        );
+        stockCalculatorService.balanceAdjustment(dto, movementData, productData);
 
-        BigDecimal newValueTotalMovement = stockCalculatorService.recalculationOfValueTotalInStock(
-                dto.quantity(), dto.unitCost(), movementData.getTotalValue()
-        );
+        BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() ,dto.unitCost());
+        Movement correctMovement = movementFactory.createIn(dto, productData, valueTotalAdjustment, movementData);
 
-        if (MovementType.ENTRADA.equals(dto.type())){
-            productData.setTotalValue(productData.getTotalValue().add(newValueTotalMovement));
-            productData.setQuantity(productData.getQuantity() + newQuantityMovement);
-            productData.setAverageCost(dto.unitCost());
-
-        } else if (MovementType.SAIDA.equals(dto.type())){
-        }
+        movementRepository.save(correctMovement);
         return null;
     }
 
