@@ -30,13 +30,18 @@ public class MovementController {
         return ResponseEntity.status(HttpStatus.OK).body(movementService.findAll(pageable));
     }
 
-    @PutMapping("/{id}correct")
-    public ResponseEntity<MovementUpdateResponseDto> toCorrectMovement(Long id, @RequestBody @Valid CorrectedRequestDto dto){
+    @PostMapping("/{id}/correct-in")
+    public ResponseEntity<MovementResponseDto> toCorrectMovementIn(@PathVariable Long id, @RequestBody @Valid CorrectedInDto dto){
         return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementIn(id, dto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelMovement(Long id){
+    @PostMapping("/{id}/correct-out")
+    public ResponseEntity<MovementResponseDto> toCorrectMovementOut(@PathVariable Long id, @RequestBody @Valid CorrectedOutDto dto){
+        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementOut(id, dto));
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<Void> cancelMovement(@PathVariable Long id){
         movementService.cancelMovement(id);
         return ResponseEntity.noContent().build();
     }

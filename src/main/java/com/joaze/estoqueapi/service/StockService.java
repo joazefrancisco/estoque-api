@@ -8,6 +8,7 @@ import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
 import com.joaze.estoqueapi.model.Movement;
+import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
@@ -36,10 +37,7 @@ public class StockService {
         Product productData = this.findProductOrThrow(dto.productId());
 
         BigDecimal valueTotalIn = stockCalculatorService.calculateValueTotal(dto.quantity(), dto.unitCost());
-
-        productData.setTotalValue(productData.getTotalValue().add(valueTotalIn));
-        productData.setQuantity(productData.getQuantity() + dto.quantity());
-        productData.setAverageCost(stockCalculatorService.calculateAverageCost(productData.getTotalValue(), productData.getQuantity()));
+        stockCalculatorService.calculateStock(MovementType.IN, dto.quantity(), valueTotalIn, productData);
 
         Movement movement = movementFactory.createIn(dto, productData, valueTotalIn, null);
 
@@ -51,24 +49,17 @@ public class StockService {
     public MovementResponseDto stockOut(MovementOutDto dto) {
         Product productData = this.findProductOrThrow(dto.productId());
 
-        if (dto.quantity() > productData.getQuantity()) {
+        if (dto.quantity() > productData.getQuantity())
             throw new InsufficientStockException("Insufficient stock!");
-        }
 
-        BigDecimal valueTotalOut = stockCalculatorService.calculateOutTotal(productData, dto.quantity());
-        int newQuantity = productData.getQuantity() - dto.quantity();
-
+        BigDecimal valueTotalOut = stockCalculatorService.calculateValueTotal(dto.quantity(), productData.getAverageCost());
+        stockCalculatorService.calculateStock(MovementType.OUT, dto.quantity(), valueTotalOut, productData);
         Movement movement = movementFactory.createOut(dto, productData, valueTotalOut, null);
 
-        if (newQuantity == 0) {
+        if (productData.getQuantity() == 0) {
             movement.setTotalValue(productData.getTotalValue());
-            productData.setTotalValue(BigDecimal.ZERO);
-            productData.setAverageCost(BigDecimal.ZERO);
-        } else {
-            productData.setTotalValue(productData.getTotalValue().subtract(valueTotalOut));
         }
 
-        productData.setQuantity(newQuantity);
         movementRepository.save(movement);
         return movementMapper.toResponseDto(movement);
     }

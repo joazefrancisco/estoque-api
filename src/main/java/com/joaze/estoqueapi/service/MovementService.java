@@ -1,10 +1,9 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.movement.MovementDetailDto;
-import com.joaze.estoqueapi.dto.movement.MovementSummaryDto;
-import com.joaze.estoqueapi.dto.movement.CorrectedRequestDto;
-import com.joaze.estoqueapi.dto.movement.MovementUpdateResponseDto;
+import com.joaze.estoqueapi.dto.movement.*;
 import com.joaze.estoqueapi.dto.stock.MovementInDto;
+import com.joaze.estoqueapi.dto.stock.MovementOutDto;
+import com.joaze.estoqueapi.exception.InsufficientStockException;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
@@ -43,18 +42,38 @@ public class MovementService {
     }
 
     @Transactional
-    public MovementUpdateResponseDto toCorrectMovementIn(Long id, CorrectedRequestDto dto){
+    public MovementResponseDto toCorrectMovementIn(Long id, CorrectedInDto dto){
         Movement movementData = this.findMovementOrThrow(id);
         movementData.setStatus(MovementStatus.CORRECTED);
         Product productData = movementData.getProduct();
 
-        stockCalculatorService.balanceAdjustment(dto, movementData, productData);
-
         BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() ,dto.unitCost());
-        Movement correctMovement = movementFactory.createIn(dto, productData, valueTotalAdjustment, movementData);
+        stockCalculatorService.balanceAdjustment(MovementType.IN, dto.quantity(), valueTotalAdjustment, movementData, productData);
+
+        MovementInDto movementInDto = movementMapper.fromCorrectionIn(dto);
+        Movement correctMovement = movementFactory.createIn(movementInDto, productData, valueTotalAdjustment, movementData);
 
         movementRepository.save(correctMovement);
-        return null;
+        return movementMapper.toResponseDto(correctMovement);
+    }
+
+    @Transactional
+    public MovementResponseDto toCorrectMovementOut(Long id, CorrectedOutDto dto){
+        Movement movementData = this.findMovementOrThrow(id);
+        movementData.setStatus(MovementStatus.CORRECTED);
+        Product productData = movementData.getProduct();
+
+        if (dto.quantity() > productData.getQuantity())
+            throw new InsufficientStockException("Insufficient stock!");
+
+        BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() , movementData.getUnitCost());
+        stockCalculatorService.balanceAdjustment(MovementType.OUT, dto.quantity(), valueTotalAdjustment, movementData, productData);
+
+        MovementOutDto movementOutDto = movementMapper.fromCorrectionOut(dto);
+        Movement correctMovement = movementFactory.createOut(movementOutDto, productData, valueTotalAdjustment, movementData);
+
+        movementRepository.save(correctMovement);
+        return movementMapper.toResponseDto(correctMovement);
     }
 
     public void cancelMovement(Long id){

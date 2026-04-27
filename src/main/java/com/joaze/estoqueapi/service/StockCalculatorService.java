@@ -1,7 +1,9 @@
 package com.joaze.estoqueapi.service;
 
-import com.joaze.estoqueapi.dto.movement.CorrectedRequestDto;
+import com.joaze.estoqueapi.dto.movement.CorrectedInDto;
+import com.joaze.estoqueapi.dto.movement.CorrectedOutDto;
 import com.joaze.estoqueapi.model.Movement;
+import com.joaze.estoqueapi.model.MovementType;
 import com.joaze.estoqueapi.model.Product;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,7 @@ public class StockCalculatorService {
 
     public BigDecimal calculateValueTotal(Integer quantity, BigDecimal unitCost){
         if (quantity == 0) return BigDecimal.ZERO;
-        return BigDecimal.valueOf(quantity).multiply(unitCost);
+        return unitCost.multiply(BigDecimal.valueOf(quantity));
     }
 
     public BigDecimal calculateAverageCost(BigDecimal totalValue, Integer totalQuantity){
@@ -21,23 +23,56 @@ public class StockCalculatorService {
         return totalValue.divide(BigDecimal.valueOf(totalQuantity), 4, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal calculateOutTotal(Product product, Integer quantityOut){
-        if (quantityOut == 0) return BigDecimal.ZERO;
-        BigDecimal unitRealCost = product.getTotalValue()
-                .divide(BigDecimal.valueOf(product.getQuantity()), 10, RoundingMode.HALF_UP);
+    public void calculateStock(MovementType type, Integer quantity, BigDecimal valueTotal, Product product){
 
-        return unitRealCost.multiply(BigDecimal.valueOf(quantityOut));
+        if (MovementType.IN.equals(type)) {
+            int newQuantity = product.getQuantity() + quantity;
+            BigDecimal newValueTotal = product.getTotalValue().add(valueTotal);
+            BigDecimal newAverageCost = this.calculateAverageCost(newValueTotal, newQuantity);
+
+            this.calculateProduct(newQuantity, newAverageCost, newValueTotal, product);
+        }
+
+        if (MovementType.OUT.equals(type)) {
+            int newQuantity = product.getQuantity() - quantity;
+
+            if (newQuantity == 0){
+                this.calculateProduct(0, BigDecimal.ZERO, BigDecimal.ZERO, product);
+
+            } else {
+                BigDecimal newValueTotal = product.getTotalValue().subtract(valueTotal);
+                this.calculateProduct(newQuantity, product.getAverageCost(), newValueTotal, product);
+            }
+        }
     }
 
-    public void balanceAdjustment(CorrectedRequestDto dto, Movement movement,  Product product){
-        BigDecimal correctValueTotal = this.calculateValueTotal(dto.quantity(), dto.unitCost());
+    public void balanceAdjustment(MovementType type , Integer quantity, BigDecimal valueTotal, Movement movement, Product product){
 
-        Integer quantityAdjustment = product.getQuantity() + (dto.quantity() - movement.getQuantity());
-        BigDecimal valueTotalAdjustment = product.getTotalValue().add(correctValueTotal.subtract(movement.getTotalValue()));
-        BigDecimal averageCostAdjustment = this.calculateAverageCost(valueTotalAdjustment , quantityAdjustment);
+        if (MovementType.IN.equals(type)){
+            int quantityAdjustment = product.getQuantity() + (quantity - movement.getQuantity());
+            BigDecimal valueTotalAdjustment = product.getTotalValue().add(valueTotal.subtract(movement.getTotalValue()));
+            BigDecimal averageCostAdjustment = this.calculateAverageCost(valueTotalAdjustment , quantityAdjustment);
+            this.calculateProduct(quantityAdjustment, averageCostAdjustment, valueTotalAdjustment, product);
+        }
 
-        product.setQuantity(quantityAdjustment);
-        product.setTotalValue(valueTotalAdjustment);
-        product.setAverageCost(averageCostAdjustment);
+        else if (MovementType.OUT.equals(type)){
+            int newQuantity = movement.getQuantity() - quantity;
+
+            if (newQuantity == 0){
+                this.calculateProduct(0, BigDecimal.ZERO, BigDecimal.ZERO, product);
+
+            } else {
+                int quantityAdjustment = product.getQuantity() + quantity;
+                BigDecimal valueTotalAdjustment = product.getTotalValue().add(movement.getTotalValue().subtract(valueTotal));
+                BigDecimal averageCostAdjustment = this.calculateAverageCost(valueTotalAdjustment , quantityAdjustment);
+                this.calculateProduct(quantityAdjustment, averageCostAdjustment, valueTotalAdjustment, product);
+            }
+        }
+    }
+
+    private void calculateProduct(Integer quantity, BigDecimal averageCost, BigDecimal valueTotal, Product product){
+        product.setQuantity(quantity);
+        product.setAverageCost(averageCost);
+        product.setTotalValue(valueTotal);
     }
 }
