@@ -3,6 +3,8 @@ package com.joaze.estoqueapi.controller;
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
+import com.joaze.estoqueapi.exception.ProductHasMovementsException;
+import com.joaze.estoqueapi.model.ProductStatus;
 import com.joaze.estoqueapi.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -43,9 +45,15 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id ,productDto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
-        productService.deleteProduct(id);
+    @PutMapping("/{id}/active")
+    public ResponseEntity<Void> activeProduct(@PathVariable Long id) {
+        productService.changeStatus(id, ProductStatus.ACTIVE);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/inactive")
+    public ResponseEntity<Void> inactiveProduct(@PathVariable Long id) {
+        productService.changeStatus(id, ProductStatus.INACTIVE);
         return ResponseEntity.noContent().build();
     }
 }

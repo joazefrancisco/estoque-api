@@ -35,6 +35,9 @@ public class Product {
     private BigDecimal totalValue;
 
     @Column(nullable = false)
+    private ProductStatus status;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -45,6 +48,7 @@ public class Product {
         this.quantity = 0;
         this.averageCost = BigDecimal.ZERO;
         this.totalValue = BigDecimal.ZERO;
+        this.status = ProductStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

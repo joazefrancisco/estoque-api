@@ -3,9 +3,13 @@ package com.joaze.estoqueapi.service;
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
+import com.joaze.estoqueapi.exception.BusinessException;
+import com.joaze.estoqueapi.exception.ProductHasMovementsException;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.mapper.ProductMapper;
 import com.joaze.estoqueapi.model.Product;
+import com.joaze.estoqueapi.model.ProductStatus;
+import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -20,6 +24,8 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     private final ProductMapper productMapper;
+
+    private final MovementRepository movementRepository;
 
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto) {
@@ -40,13 +46,22 @@ public class ProductService {
     @Transactional
     public ProductSummaryDto updateProduct(Long id, ProductRequestDto productDto) {
         Product productData = this.findProductOrThrow(id);
+
+        if (ProductStatus.INACTIVE.equals(productData.getStatus()))
+            throw new BusinessException("Product inactive");
+
         productMapper.updateEntity(productData, productDto);
         return productMapper.toSummaryDto(productData);
     }
 
-    public void deleteProduct(Long id) {
+    @Transactional
+    public void changeStatus(Long id, ProductStatus status) {
         Product productData = this.findProductOrThrow(id);
-        productRepository.delete(productData);
+
+        if (productData.getStatus().equals(status))
+            return;
+
+        productData.setStatus(status);
     }
 
     private Product findProductOrThrow(Long id) {
