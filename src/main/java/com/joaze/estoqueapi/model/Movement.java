@@ -48,8 +48,8 @@ public class Movement {
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "movement_reference_id")
-    Movement movementReference;
+    @JoinColumn(name = "reference_movement_id")
+    Movement referenceMovement;
 
     @PrePersist
     private void prePersist(){

@@ -45,13 +45,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(id ,productDto));
     }
 
-    @PutMapping("/{id}/active")
+    @PatchMapping("/{id}/active")
     public ResponseEntity<Void> activeProduct(@PathVariable Long id) {
         productService.changeStatus(id, ProductStatus.ACTIVE);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/inactive")
+    @PatchMapping("/{id}/inactive")
     public ResponseEntity<Void> inactiveProduct(@PathVariable Long id) {
         productService.changeStatus(id, ProductStatus.INACTIVE);
         return ResponseEntity.noContent().build();

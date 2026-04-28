@@ -1,7 +1,6 @@
 package com.joaze.estoqueapi.controller;
 
 import com.joaze.estoqueapi.dto.movement.*;
-import com.joaze.estoqueapi.exception.ProductHasMovementsException;
 import com.joaze.estoqueapi.service.MovementService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -31,17 +30,17 @@ public class MovementController {
         return ResponseEntity.status(HttpStatus.OK).body(movementService.findAll(pageable));
     }
 
-    @PostMapping("/{id}/correct-in")
+    @PatchMapping("/{id}/correct-in")
     public ResponseEntity<MovementResponseDto> toCorrectMovementIn(@PathVariable Long id, @RequestBody @Valid CorrectedInDto dto) {
         return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementIn(id, dto));
     }
 
-    @PostMapping("/{id}/correct-out")
+    @PatchMapping("/{id}/correct-out")
     public ResponseEntity<MovementResponseDto> toCorrectMovementOut(@PathVariable Long id, @RequestBody @Valid CorrectedOutDto dto) {
         return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementOut(id, dto));
     }
 
-    @PostMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Void> cancelMovement(@PathVariable Long id){
         movementService.cancelMovement(id);
         return ResponseEntity.noContent().build();

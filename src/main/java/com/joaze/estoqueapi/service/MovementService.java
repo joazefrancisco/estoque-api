@@ -43,6 +43,10 @@ public class MovementService {
     @Transactional
     public MovementResponseDto toCorrectMovementIn(Long id, CorrectedInDto dto) {
         Movement movementData = this.findMovementOrThrow(id);
+
+        if (MovementStatus.CORRECTED.equals(movementData.getStatus()))
+            throw new BusinessException("The movement has already been corrected");
+
         Product productData = movementData.getProduct();
 
         if (ProductStatus.INACTIVE.equals(productData.getStatus()))
@@ -62,6 +66,10 @@ public class MovementService {
     @Transactional
     public MovementResponseDto toCorrectMovementOut(Long id, CorrectedOutDto dto) {
         Movement movementData = this.findMovementOrThrow(id);
+
+        if (MovementStatus.CORRECTED.equals(movementData.getStatus()))
+            throw new BusinessException("The movement has already been corrected");
+
         Product productData = movementData.getProduct();
 
         if (ProductStatus.INACTIVE.equals(productData.getStatus()))
