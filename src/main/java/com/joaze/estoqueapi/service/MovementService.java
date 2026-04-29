@@ -5,7 +5,6 @@ import com.joaze.estoqueapi.dto.stock.MovementInDto;
 import com.joaze.estoqueapi.dto.stock.MovementOutDto;
 import com.joaze.estoqueapi.exception.BusinessException;
 import com.joaze.estoqueapi.exception.InsufficientStockException;
-import com.joaze.estoqueapi.exception.ProductHasMovementsException;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.factory.MovementFactory;
 import com.joaze.estoqueapi.mapper.MovementMapper;
@@ -37,7 +36,9 @@ public class MovementService {
     }
 
     public Page<MovementSummaryDto> findAll(Pageable pageable) {
-        return movementRepository.findAll(pageable).map(movementMapper::toSummaryDto);
+        return movementRepository
+               .findByStatus(MovementStatus.ACTIVE, pageable)
+               .map(movementMapper::toSummaryDto);
     }
 
     @Transactional

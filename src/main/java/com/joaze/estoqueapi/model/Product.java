@@ -35,6 +35,7 @@ public class Product {
     private BigDecimal totalValue;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
     @Column(nullable = false)

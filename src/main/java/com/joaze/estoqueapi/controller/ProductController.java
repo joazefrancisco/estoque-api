@@ -3,7 +3,6 @@ package com.joaze.estoqueapi.controller;
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
-import com.joaze.estoqueapi.exception.ProductHasMovementsException;
 import com.joaze.estoqueapi.model.ProductStatus;
 import com.joaze.estoqueapi.service.ProductService;
 import jakarta.validation.Valid;

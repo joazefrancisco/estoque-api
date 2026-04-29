@@ -49,12 +49,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
-    @ExceptionHandler(ProductHasMovementsException.class)
-    public ResponseEntity<ResponseError> handlerProductHasMovementsException(ProductHasMovementsException exception, HttpServletRequest request){
-        ResponseError error = this.createResponseError(HttpStatus.CONFLICT, exception.getMessage(), request, null);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
     private ResponseError createResponseError(HttpStatus http, String message, HttpServletRequest request, List<FieldErrorResponse> errors){
         return new ResponseError(
                 LocalDateTime.now(),

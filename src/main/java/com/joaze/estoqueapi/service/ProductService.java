@@ -4,12 +4,10 @@ import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.exception.BusinessException;
-import com.joaze.estoqueapi.exception.ProductHasMovementsException;
 import com.joaze.estoqueapi.exception.ResourceNotFoundException;
 import com.joaze.estoqueapi.mapper.ProductMapper;
 import com.joaze.estoqueapi.model.Product;
 import com.joaze.estoqueapi.model.ProductStatus;
-import com.joaze.estoqueapi.repository.MovementRepository;
 import com.joaze.estoqueapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -25,8 +23,6 @@ public class ProductService {
 
     private final ProductMapper productMapper;
 
-    private final MovementRepository movementRepository;
-
     @Transactional
     public ProductSummaryDto createProduct(ProductRequestDto productDto) {
         Product product = productMapper.toEntity(productDto);
@@ -35,7 +31,9 @@ public class ProductService {
     }
 
     public Page<ProductSummaryDto> findAll(Pageable pageable) {
-        return productRepository.findAll(pageable).map(productMapper::toSummaryDto);
+        return productRepository
+                .findByStatus(ProductStatus.ACTIVE, pageable)
+                .map(productMapper::toSummaryDto);
     }
 
     public ProductDetailDto searchProduct(Long id) {
