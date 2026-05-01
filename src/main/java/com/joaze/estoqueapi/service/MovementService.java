@@ -43,22 +43,23 @@ public class MovementService {
 
     @Transactional
     public MovementResponseDto toCorrectMovementIn(Long id, CorrectedInDto dto) {
-        Movement movementData = this.findMovementOrThrow(id);
+        Movement referenceMovement = this.findMovementOrThrow(id);
 
-        if (MovementStatus.CORRECTED.equals(movementData.getStatus()))
+        if (MovementStatus.CORRECTED.equals(referenceMovement.getStatus()))
             throw new BusinessException("The movement has already been corrected");
 
-        Product productData = movementData.getProduct();
+        Product productData = referenceMovement.getProduct();
 
         if (ProductStatus.INACTIVE.equals(productData.getStatus()))
             throw new BusinessException("Product inactive");
 
-        movementData.setStatus(MovementStatus.CORRECTED);
+        referenceMovement.setStatus(MovementStatus.CORRECTED);
         BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() ,dto.unitCost());
-        stockCalculatorService.balanceAdjustment(MovementType.IN, dto.quantity(), valueTotalAdjustment, movementData, productData);
+        stockCalculatorService.balanceAdjustment(MovementType.IN, dto.quantity(), valueTotalAdjustment, referenceMovement, productData);
 
         MovementInDto movementInDto = movementMapper.fromCorrectionIn(dto);
-        Movement correctMovement = movementFactory.createIn(movementInDto, productData, valueTotalAdjustment, movementData);
+        Movement originalMovement = this.getOriginalMovement(referenceMovement);
+        Movement correctMovement = movementFactory.createIn(movementInDto, productData, valueTotalAdjustment, originalMovement);
 
         movementRepository.save(correctMovement);
         return movementMapper.toResponseDto(correctMovement);
@@ -66,12 +67,12 @@ public class MovementService {
 
     @Transactional
     public MovementResponseDto toCorrectMovementOut(Long id, CorrectedOutDto dto) {
-        Movement movementData = this.findMovementOrThrow(id);
+        Movement referenceMovement = this.findMovementOrThrow(id);
 
-        if (MovementStatus.CORRECTED.equals(movementData.getStatus()))
+        if (MovementStatus.CORRECTED.equals(referenceMovement.getStatus()))
             throw new BusinessException("The movement has already been corrected");
 
-        Product productData = movementData.getProduct();
+        Product productData = referenceMovement.getProduct();
 
         if (ProductStatus.INACTIVE.equals(productData.getStatus()))
             throw new BusinessException("Product inactive");
@@ -79,12 +80,13 @@ public class MovementService {
         if (dto.quantity() > productData.getQuantity())
             throw new InsufficientStockException("Insufficient stock!");
 
-        movementData.setStatus(MovementStatus.CORRECTED);
-        BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() , movementData.getUnitCost());
-        stockCalculatorService.balanceAdjustment(MovementType.OUT, dto.quantity(), valueTotalAdjustment, movementData, productData);
+        referenceMovement.setStatus(MovementStatus.CORRECTED);
+        BigDecimal valueTotalAdjustment = stockCalculatorService.calculateValueTotal(dto.quantity() , referenceMovement.getUnitCost());
+        stockCalculatorService.balanceAdjustment(MovementType.OUT, dto.quantity(), valueTotalAdjustment, referenceMovement, productData);
 
         MovementOutDto movementOutDto = movementMapper.fromCorrectionOut(dto);
-        Movement correctMovement = movementFactory.createOut(movementOutDto, productData, valueTotalAdjustment, movementData);
+        Movement originalMovement = this.getOriginalMovement(referenceMovement);
+        Movement correctMovement = movementFactory.createOut(movementOutDto, productData, valueTotalAdjustment, originalMovement);
 
         movementRepository.save(correctMovement);
         return movementMapper.toResponseDto(correctMovement);
@@ -102,5 +104,9 @@ public class MovementService {
     private Movement findMovementOrThrow(Long id){
         return movementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movement not found"));
+    }
+
+    private Movement getOriginalMovement(Movement movement){
+        return movement.getReferenceMovement() == null ? movement : movement.getReferenceMovement();
     }
 }
