@@ -61,15 +61,16 @@ public class MovementController {
                     description = "Date for correcting an OUT movement",
                     required = true
             )
-            @RequestBody @Valid CorrectedInDto dto) {
+            @RequestBody @Valid CorrectedInDto request) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementIn(id, dto));
+        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementIn(id, request));
     }
 
     @Operation(summary = "Correct out movement and recalculate stock")
     @ApiResponse(responseCode = "200", description = "Movement corrected")
     @ApiResponse(responseCode = "400", description = "Insufficient stock")
     @ApiResponse(responseCode = "404", description = "Movement not found")
+    @ApiResponse(responseCode = "422", description = "Product inactive")
     @ApiResponse(responseCode = "500", description = "Unexpected error")
     @PatchMapping("/{id}/correct-out")
     public ResponseEntity<MovementResponseDto> toCorrectMovementOut(
@@ -80,9 +81,9 @@ public class MovementController {
                     description = "Data for correcting an IN movement",
                     required = true
             )
-            @RequestBody @Valid CorrectedOutDto dto) {
+            @RequestBody @Valid CorrectedOutDto request) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementOut(id, dto));
+        return ResponseEntity.status(HttpStatus.OK).body(movementService.toCorrectMovementOut(id, request));
     }
 
     @Operation(description = "Cancel movement")
