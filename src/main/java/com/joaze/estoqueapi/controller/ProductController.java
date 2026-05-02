@@ -5,6 +5,9 @@ import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.model.ProductStatus;
 import com.joaze.estoqueapi.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,12 +21,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/products")
+@Tag(name = "Products", description = "Products operations")
 public class ProductController {
 
-    private ProductService productService;
+    private final ProductService productService;
 
+    @Operation(description = "Create product")
+    @ApiResponse(responseCode = "201", description = "Product created")
     @PostMapping
-    public ResponseEntity<ProductSummaryDto> createProduct(@RequestBody @Valid ProductRequestDto productDto){
+    public ResponseEntity<ProductSummaryDto> createProduct(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "...", required = true
+            )
+            @RequestBody @Valid ProductRequestDto productDto){
+
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDto));
     }
 
