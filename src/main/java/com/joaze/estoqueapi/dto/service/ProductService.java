@@ -1,4 +1,4 @@
-package com.joaze.estoqueapi.service;
+package com.joaze.estoqueapi.dto.service;
 
 import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;

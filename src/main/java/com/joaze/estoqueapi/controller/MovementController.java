@@ -1,7 +1,7 @@
 package com.joaze.estoqueapi.controller;
 
 import com.joaze.estoqueapi.dto.movement.*;
-import com.joaze.estoqueapi.service.MovementService;
+import com.joaze.estoqueapi.dto.service.MovementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

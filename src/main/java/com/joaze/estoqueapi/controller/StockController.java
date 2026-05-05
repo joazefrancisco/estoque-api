@@ -3,7 +3,7 @@ package com.joaze.estoqueapi.controller;
 import com.joaze.estoqueapi.dto.stock.MovementInDto;
 import com.joaze.estoqueapi.dto.stock.MovementOutDto;
 import com.joaze.estoqueapi.dto.movement.MovementResponseDto;
-import com.joaze.estoqueapi.service.StockService;
+import com.joaze.estoqueapi.dto.service.StockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

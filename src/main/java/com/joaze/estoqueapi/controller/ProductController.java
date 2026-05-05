@@ -4,7 +4,7 @@ import com.joaze.estoqueapi.dto.product.ProductDetailDto;
 import com.joaze.estoqueapi.dto.product.ProductSummaryDto;
 import com.joaze.estoqueapi.dto.product.ProductRequestDto;
 import com.joaze.estoqueapi.model.ProductStatus;
-import com.joaze.estoqueapi.service.ProductService;
+import com.joaze.estoqueapi.dto.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

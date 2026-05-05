@@ -1,4 +1,4 @@
-package com.joaze.estoqueapi.service;
+package com.joaze.estoqueapi.dto.service;
 
 import com.joaze.estoqueapi.dto.movement.CorrectedInDto;
 import com.joaze.estoqueapi.dto.movement.CorrectedOutDto;
