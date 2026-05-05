@@ -1,7 +1,6 @@
-package com.joaze.estoqueapi.service;
+package com.joaze.estoqueapi.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
