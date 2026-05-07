@@ -102,7 +102,7 @@ public class MovementService {
     }
 
     private Movement findMovementOrThrow(Long id){
-        return movementRepository.findById(id)
+        return movementRepository.findByIdWithLock(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movement not found"));
     }
 

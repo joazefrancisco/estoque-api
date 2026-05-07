@@ -63,7 +63,7 @@ public class ProductService {
     }
 
     private Product findProductOrThrow(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdWithLock(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product id: " + id + " not found"));
     }
 }
